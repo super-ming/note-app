@@ -17,16 +17,19 @@ export default class Notes extends Component {
       isDeleting: null,
       note: null,
       content: "",
+      attachment: null,
       attachmentURL: null,
     };
   }
 
+
   async componentDidMount() {
     try {
       let attachmentURL;
+      //Load note and save it to state.
       const note = await this.getNote();
       const { content, attachment } = note;
-
+      //If there is an attachment, use the key to get the secure link to the uploaded file and store the link.
       if (attachment) {
         attachmentURL = await Storage.vault.get(attachment);
         console.log(attachmentURL);
@@ -35,6 +38,7 @@ export default class Notes extends Component {
       this.setState({
         note,
         content,
+        attachment,
         attachmentURL,
       });
     } catch (e) {
@@ -51,7 +55,7 @@ export default class Notes extends Component {
   }
 
   formatFilename(str) {
-    //replace non-word characters
+    //replace non-word characters to remove timestamp in name
     return str.replace(/^\w+-/, "");
   }
 
@@ -82,13 +86,13 @@ export default class Notes extends Component {
 
     this.setState({ isLoading: true });
     try {
-      if (this.state.attachmentURL) {
-        await s3Delete(this.state.attachmentURL);
+      if (this.state.attachment) {
+        //await s3Delete(this.state.attachment);
       }
       if (this.file) {
         attachment = await s3Upload(this.file);
       }
-
+      //Make put request with note object and redirect to homepage upon success
       await this.saveNote({
         content: this.state.content,
         attachment: attachment || this.state.note.attachment
@@ -105,6 +109,7 @@ export default class Notes extends Component {
     return API.del("notes", `/notes/${this.props.match.params.id}`);
   }
 
+  //Make delete request and redirect to homepage upon success
   handleDelete = async event => {
     event.preventDefault();
 
@@ -119,6 +124,9 @@ export default class Notes extends Component {
     this.setState({ isDeleting: true });
 
     try {
+      if (this.state.attachment) {
+        //await s3Delete(this.state.attachment);
+      }
       await this.deleteNote();
       this.props.history.push("/");
     } catch (e) {
@@ -127,6 +135,7 @@ export default class Notes extends Component {
     }
   }
 
+  //render form only when note is available
   render() {
     return (
       <div className="Notes">
