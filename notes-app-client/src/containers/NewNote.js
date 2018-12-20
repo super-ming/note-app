@@ -4,7 +4,7 @@ import LoaderButton from "../components/LoaderButton";
 import config from "../config";
 import "./NewNote.css";
 import { API } from "aws-amplify";
-import { s3Upload } from "../libs/awsLib";
+import { s3Upload, s3Delete } from "../libs/awsLib";
 
 export default class NewNote extends Component {
   constructor(props) {
@@ -35,22 +35,22 @@ export default class NewNote extends Component {
 
   handleSubmit = async event => {
     event.preventDefault();
-
+    let attachment;
     if (this.file && this.file.size > config.MAX_ATTACHMENT_SIZE) {
       alert(`Please pick a file smaller than ${config.MAX_ATTACHMENT_SIZE/1000000} MB.`);
       return;
     }
-
     this.setState({ isLoading: true });
-
     try {
-      const attachment = this.file
-        ? await s3Upload(this.file)
-        : null;
-
-      await this.createNote({
-        attachment,
-        content: this.state.content
+      if (this.file) {
+        if (this.state.attachmentURL) {
+          await s3Delete(this.state.attachmentURL);
+        }
+        attachment = await s3Upload(this.file);
+      }
+      await this.saveNote({
+        content: this.state.content,
+        attachment: attachment || this.state.note.attachment
       });
       this.props.history.push("/");
     } catch (e) {
