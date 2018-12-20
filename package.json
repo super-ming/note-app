@@ -1,0 +1,19 @@
+{
+  "name": "note-app",
+  "version": "1.0.0",
+  "description": "Note taking app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/super-ming/note-app.git"
+  },
+  "author": "Ming Ho",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/super-ming/note-app/issues"
+  },
+  "homepage": "https://github.com/super-ming/note-app#readme"
+}
