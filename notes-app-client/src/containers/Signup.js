@@ -36,6 +36,7 @@ export default class Signup extends Component {
     });
   }
 
+  //Sign up user in Cognito and save user object
   handleSubmit = async event => {
     event.preventDefault();
 
@@ -50,12 +51,25 @@ export default class Signup extends Component {
         newUser
       });
     } catch (e) {
-      alert(e.message);
+      //alert(e.message);
+      if (e.name === "UsernameExistsException") {
+        alert("Your email is already in our database. Please check your email for the confirmation code");
+        //await Auth.resendSignUp(this.state.email)
+        this.setState({
+          newUser: {
+            username: this.state.email,
+            password: this.state.password,
+          },
+        });
+      } else {
+        alert(e.message);
+      }
     }
 
     this.setState({ isLoading: false });
   }
 
+  //Authenticate user sign up with confirmation code in Cognito and redirect to homepage
   handleConfirmationSubmit = async event => {
     event.preventDefault();
 
