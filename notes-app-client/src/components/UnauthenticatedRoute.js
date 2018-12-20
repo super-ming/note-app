@@ -17,6 +17,9 @@ function querystring(name, url = window.location.href) {
   return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
+//Unsecured content
+//If user is unauthenticated, render the passed in component. If not, redirect to homepage. If user was trying to access secured page,
+//redirect back to that page after login
 export default ({ component: C, props: cProps, ...rest }) => {
   const redirect = querystring("redirect");
   return (

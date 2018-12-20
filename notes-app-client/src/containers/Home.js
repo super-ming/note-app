@@ -14,6 +14,7 @@ export default class Home extends Component {
     };
   }
 
+  //Make a get request for list of notes
   async componentDidMount() {
     if (!this.props.isAuthenticated) {
       return;
@@ -33,6 +34,9 @@ export default class Home extends Component {
     return API.get("notes", "/notes");
   }
 
+  //Once list of notes is fetched from S3, render each note in the list if it exists.
+  //Always render a create new note button as the first item by concatenating an array with empty object with notes array [ {}, {notes} ]
+  //LinkContainer directs the app to each of the items
   renderNotesList(notes) {
     return [{}].concat(notes).map(
       (note, i) =>
@@ -78,6 +82,7 @@ export default class Home extends Component {
     );
   }
 
+  //Render notes if logged in
   render() {
     return (
       <div className="Home">
