@@ -1,10 +1,10 @@
 @media all and (min-width: 480px) {
-  .Settings {
+  .Login {
     padding: 60px 0;
+  }
+
+  .Login form {
     margin: 0 auto;
     max-width: 320px;
   }
-}
-.Settings .LoaderButton:last-child {
-  margin-top: 15px;
 }
