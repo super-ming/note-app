@@ -1,96 +1,151 @@
 import React, { Component } from "react";
-import { FormGroup, FormControl, ControlLabel } from "react-bootstrap";
+import { HelpBlock, FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import LoaderButton from "../components/LoaderButton";
-import config from "../config";
-import "./NewNote.css";
-import { API } from "aws-amplify";
-import { s3Upload } from "../libs/awsLib";
+import "./Signup.css";
+import { Auth } from "aws-amplify";
 
-export default class NewNote extends Component {
+export default class Signup extends Component {
   constructor(props) {
     super(props);
 
-    this.file = null;
-
     this.state = {
-      isLoading: null,
-      content: ""
+      isLoading: false,
+      email: "",
+      password: "",
+      confirmPassword: "",
+      confirmationCode: "",
+      newUser: null
     };
   }
 
   validateForm() {
-    return this.state.content.length > 0;
+    return (
+      this.state.email.length > 0 &&
+      this.state.password.length > 0 &&
+      this.state.password === this.state.confirmPassword
+    );
+  }
+
+  validateConfirmationForm() {
+    return this.state.confirmationCode.length > 0;
   }
 
   handleChange = event => {
-    console.log(event.target.value);
     this.setState({
       [event.target.id]: event.target.value
     });
   }
 
-  handleFileChange = event => {
-    this.file = event.target.files[0];
-  }
-
   handleSubmit = async event => {
     event.preventDefault();
-
-    if (this.file && this.file.size > config.MAX_ATTACHMENT_SIZE) {
-      alert(`Please pick a file smaller than ${config.MAX_ATTACHMENT_SIZE/1000000} MB.`);
-      return;
-    }
 
     this.setState({ isLoading: true });
 
     try {
-      const attachment = this.file
-        ? await s3Upload(this.file)
-        : null;
-
-      await this.createNote({
-        attachment,
-        content: this.state.content
+      const newUser = await Auth.signUp({
+        username: this.state.email,
+        password: this.state.password
       });
+      this.setState({
+        newUser
+      });
+    } catch (e) {
+      alert(e.message);
+    }
+
+    this.setState({ isLoading: false });
+  }
+
+  handleConfirmationSubmit = async event => {
+    event.preventDefault();
+
+    this.setState({ isLoading: true });
+
+    try {
+      await Auth.confirmSignUp(this.state.email, this.state.confirmationCode);
+      await Auth.signIn(this.state.email, this.state.password);
+
+      this.props.userHasAuthenticated(true);
       this.props.history.push("/");
     } catch (e) {
-      alert(e);
+      alert(e.message);
       this.setState({ isLoading: false });
     }
   }
 
-createNote(note) {
-  return API.post("notes", "/notes", {
-    body: note
-  });
-}
+  renderConfirmationForm() {
+    return (
+      <form onSubmit={this.handleConfirmationSubmit}>
+        <FormGroup controlId="confirmationCode" bsSize="large">
+          <ControlLabel>Confirmation Code</ControlLabel>
+          <FormControl
+            autoFocus
+            type="tel"
+            value={this.state.confirmationCode}
+            onChange={this.handleChange}
+          />
+          <HelpBlock>Please check your email for the code.</HelpBlock>
+        </FormGroup>
+        <LoaderButton
+          block
+          bsSize="large"
+          disabled={!this.validateConfirmationForm()}
+          type="submit"
+          isLoading={this.state.isLoading}
+          text="Verify"
+          loadingText="Verifying…"
+        />
+      </form>
+    );
+  }
+
+  renderForm() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <FormGroup controlId="email" bsSize="large">
+          <ControlLabel>Email</ControlLabel>
+          <FormControl
+            autoFocus
+            type="email"
+            value={this.state.email}
+            onChange={this.handleChange}
+          />
+        </FormGroup>
+        <FormGroup controlId="password" bsSize="large">
+          <ControlLabel>Password</ControlLabel>
+          <FormControl
+            value={this.state.password}
+            onChange={this.handleChange}
+            type="password"
+          />
+        </FormGroup>
+        <FormGroup controlId="confirmPassword" bsSize="large">
+          <ControlLabel>Confirm Password</ControlLabel>
+          <FormControl
+            value={this.state.confirmPassword}
+            onChange={this.handleChange}
+            type="password"
+          />
+        </FormGroup>
+        <LoaderButton
+          block
+          bsSize="large"
+          disabled={!this.validateForm()}
+          type="submit"
+          isLoading={this.state.isLoading}
+          text="Signup"
+          loadingText="Signing up…"
+        />
+      </form>
+    );
+  }
 
   render() {
     return (
-      <div className="NewNote">
-        <form onSubmit={this.handleSubmit}>
-          <FormGroup controlId="content">
-            <FormControl
-              onChange={this.handleChange}
-              value={this.state.content}
-              componentClass="textarea"
-            />
-          </FormGroup>
-          <FormGroup controlId="file">
-            <ControlLabel>Attachment</ControlLabel>
-            <FormControl onChange={this.handleFileChange} type="file" />
-          </FormGroup>
-          <LoaderButton
-            block
-            bsStyle="primary"
-            bsSize="large"
-            disabled={!this.validateForm()}
-            type="submit"
-            isLoading={this.state.isLoading}
-            text="Create"
-            loadingText="Creating…"
-          />
-        </form>
+      <div className="Signup">
+        {this.state.newUser === null
+          ? this.renderForm()
+          : this.renderConfirmationForm()}
       </div>
     );
   }
