@@ -2,13 +2,10 @@ import React from "react";
 import { Route, Redirect } from "react-router-dom";
 
 function querystring(name, url = window.location.href) {
-  console.log(name)
   name = name.replace(/[[]]/g, "\\$&");
-  console.log(name);
   const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)", "i");
-  console.log(url);
+  //search url string for the part that starts with "?or&redirect=/"and return arrays of matches
   const results = regex.exec(url);
-  console.log(results);
 
   if (!results) {
     return null;
@@ -16,13 +13,12 @@ function querystring(name, url = window.location.href) {
   if (!results[2]) {
     return "";
   }
-
+  //replace "+" in url with empty space
   return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
 export default ({ component: C, props: cProps, ...rest }) => {
   const redirect = querystring("redirect");
-  console.log(redirect);
   return (
     <Route
       {...rest}

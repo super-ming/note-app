@@ -7,7 +7,9 @@ import { BrowserRouter as Router } from "react-router-dom";
 import Amplify from "aws-amplify";
 import config from "./config";
 
+//initialize AWS Amplify
 Amplify.configure({
+  //Cognito
   Auth: {
     mandatorySignIn: true,
     region: config.cognito.REGION,
@@ -15,11 +17,13 @@ Amplify.configure({
     identityPoolId: config.cognito.IDENTITY_POOL_ID,
     userPoolWebClientId: config.cognito.APP_CLIENT_ID
   },
+  //S3
   Storage: {
     region: config.s3.REGION,
     bucket: config.s3.BUCKET,
     identityPoolId: config.cognito.IDENTITY_POOL_ID
   },
+  //API Gateway
   API: {
     endpoints: [
       {

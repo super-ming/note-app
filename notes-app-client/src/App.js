@@ -17,6 +17,7 @@ class App extends Component {
 
   async componentDidMount() {
     try {
+      //save current user login status
       await Auth.currentSession();
       this.userHasAuthenticated(true);
     }
@@ -28,21 +29,25 @@ class App extends Component {
     this.setState({ isAuthenticating: false });
   }
 
+  //Save authentication status
   userHasAuthenticated = authenticated => {
     this.setState({ isAuthenticated: authenticated });
   }
 
+  //Clear user session from Cognito and redirect to login page
   handleLogout = async event => {
     await Auth.signOut();
     this.userHasAuthenticated(false);
     this.props.history.push("/login");
   }
+
   render() {
     const childProps = {
       isAuthenticated: this.state.isAuthenticated,
       userHasAuthenticated: this.userHasAuthenticated
     };
-
+    //React Router Bootstrap allows  React Router and React Bootstrap to route the app to the link without refreshing the browser
+    //Only load the app when login status check with Cognito has been completed
     return (
       !this.state.isAuthenticating &&
       <div className="App container">
@@ -80,4 +85,5 @@ class App extends Component {
   }
 }
 
+//withRouter passes router props (match, location, and history) from the closest <Route> into the app. History prop is needed for handleLogout
 export default withRouter(App)

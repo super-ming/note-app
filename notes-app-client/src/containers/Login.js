@@ -20,12 +20,14 @@ export default class Login extends Component {
     return this.state.email.length > 0 && this.state.password.length > 0;
   }
 
+  //Update the state for the form field with its value
   handleChange = event => {
     this.setState({
       [event.target.id]: event.target.value
     });
   }
 
+  //Login into Cognito using the entered credentials asynchronously
   handleSubmit = async event => {
     event.preventDefault();
     this.setState({ isLoading: true });
