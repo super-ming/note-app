@@ -13,11 +13,12 @@ export default class ChangeEmail extends Component {
       email: "",
       codeSent: false,
       isConfirming: false,
-      isSendingCode: false
+      isSendingCode: false,
+      isResendingCodeEmail: false
     };
   }
 
-  validatEmailForm() {
+  validateEmailForm() {
     return this.state.email.length > 0;
   }
 
@@ -62,6 +63,26 @@ export default class ChangeEmail extends Component {
     }
   };
 
+  handleResendCodeEmail = async event => {
+    event.preventDefault();
+    this.setState({ isResendingCodeEmail: true });
+
+    try {
+      const currentUser = await Auth.currentAuthenticatedUser();
+      await Auth.userAttributes(currentUser);
+      if (currentUser.attributes["email_verified"] !== "false") {
+        Auth.verifyCurrentUserAttribute("email").then(()=> {
+          alert("A confirmation code has been sent to your email.")
+          this.setState({ isResendingCodeEmail: false });
+        }).catch(e=> {
+          alert("The following error occurred: ", e.message)
+        })
+      }
+    } catch (e) {
+      alert(e);
+    }
+  }
+
   renderUpdateForm() {
     return (
       <form onSubmit={this.handleUpdateClick}>
@@ -80,7 +101,7 @@ export default class ChangeEmail extends Component {
           bsSize="large"
           text="Update Email"
           loadingText="Updating…"
-          disabled={!this.validatEmailForm()}
+          disabled={!this.validateEmailForm()}
           isLoading={this.state.isSendingCode}
         />
       </form>
@@ -101,6 +122,15 @@ export default class ChangeEmail extends Component {
           <HelpBlock>
             Please check your email ({this.state.email}) for the confirmation
             code.
+            <LoaderButton
+              block
+              type="submit"
+              bsSize="small"
+              text="Resend Confirmation Code Email"
+              loadingText="Sending…"
+              isLoading={this.state.isResendingCodeEmail}
+              onClick={this.handleResendCodeEmail}
+            />
           </HelpBlock>
         </FormGroup>
         <LoaderButton
