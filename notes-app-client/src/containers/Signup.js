@@ -54,7 +54,7 @@ export default class Signup extends Component {
       //alert(e.message);
       if (e.name === "UsernameExistsException") {
         alert("Your email is already in our database. Please check your email for the confirmation code");
-        //await Auth.resendSignUp(this.state.email)
+        await Auth.resendSignUp(this.state.email)
         this.setState({
           newUser: {
             username: this.state.email,
@@ -76,7 +76,7 @@ export default class Signup extends Component {
     this.setState({ isLoading: true });
 
     try {
-      await Auth.confirmSignUp(this.state.email, this.state.confirmationCode);
+      await Auth.confirmSignUp(this.state.newUser.username, this.state.confirmationCode);
       await Auth.signIn(this.state.email, this.state.password);
 
       this.props.userHasAuthenticated(true);
